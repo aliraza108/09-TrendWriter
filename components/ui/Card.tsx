@@ -1,9 +1,10 @@
 "use client"
 
 import { motion } from 'framer-motion'
+import type { HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-type CardProps = React.HTMLAttributes<HTMLDivElement>
+type CardProps = Omit<HTMLMotionProps<'div'>, 'ref'>
 
 export function Card({ className, ...props }: CardProps) {
   return (
