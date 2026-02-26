@@ -9,7 +9,7 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const response = await fetch(`${API}${path}`, {
     ...rest,
     headers: {
-      'Content-Type': 'application/json',
+      ...(rest.method && rest.method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
       ...(rest.headers || {}),
     },
   })
@@ -19,7 +19,14 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
     throw new Error(text || `Request failed (${response.status})`)
   }
 
-  if (noJson) return undefined as T
+  if (noJson || response.status === 204) return undefined as T
+
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    const text = await response.text()
+    return text as T
+  }
+
   return response.json() as Promise<T>
 }
 

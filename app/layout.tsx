@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import '@/styles/globals.css'
 import { Providers } from '@/components/providers/Providers'
@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'TrendWriter',
   description: 'LinkedIn Content Automation & Growth Intelligence',
   manifest: '/manifest.json',
+}
+
+export const viewport: Viewport = {
   themeColor: '#0A66C2',
 }
 

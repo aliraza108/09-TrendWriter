@@ -15,17 +15,19 @@ export function InstallBanner() {
   useEffect(() => {
     const dismissed = localStorage.getItem('tw-install-dismissed')
     if (dismissed) return
+    if (window.innerWidth > 768) return
 
-    const timer = setTimeout(() => setOpen(true), 3000)
+    let timer: ReturnType<typeof setTimeout> | null = null
 
     const handler = (event: Event) => {
       event.preventDefault()
       setPromptEvent(event as DeferredPrompt)
+      timer = setTimeout(() => setOpen(true), 3000)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
     return () => {
-      clearTimeout(timer)
+      if (timer) clearTimeout(timer)
       window.removeEventListener('beforeinstallprompt', handler)
     }
   }, [])

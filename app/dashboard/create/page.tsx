@@ -60,10 +60,7 @@ export default function CreatePage() {
   const [date, setDate] = useState('')
   const [successOpen, setSuccessOpen] = useState(false)
 
-  const confetti = useMemo(
-    () => Array.from({ length: 18 }, (_, i) => ({ id: i, left: `${Math.random() * 100}%`, delay: i * 0.04 })),
-    [successOpen],
-  )
+  const confetti = useMemo(() => Array.from({ length: 18 }, (_, i) => ({ id: i, left: `${(i * 37) % 100}%`, delay: i * 0.04 })), [])
 
   return (
     <PageWrapper>
