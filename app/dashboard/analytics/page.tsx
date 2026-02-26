@@ -1,1 +1,132 @@
-"use client"import { useState } from 'react'import { RefreshCcw } from 'lucide-react'import { EngagementChart } from '@/components/charts/EngagementChart'import { FormatBarChart } from '@/components/charts/FormatBarChart'import { GrowthChart } from '@/components/charts/GrowthChart'import { HeatmapGrid } from '@/components/charts/HeatmapGrid'import { PageWrapper } from '@/components/layout/PageWrapper'import { Card } from '@/components/ui/Card'import { StatCard } from '@/components/ui/StatCard'import { Button } from '@/components/ui/Button'const metricData = Array.from({ length: 14 }, (_, i) => ({ day: `D${i + 1}`, impressions: 1200 + i * 95, likes: 120 + i * 12, comments: 20 + i }))const growth = Array.from({ length: 14 }, (_, i) => ({ day: `D${i + 1}`, followers: 2200 + i * 31 }))const heatmap = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].flatMap((day, dayIdx) => ['9a', '12p', '3p', '6p'].map((hour, hourIdx) => ({ day, hour, value: (dayIdx * 17 + hourIdx * 23 + 31) % 100 })))const formats = [  { format: 'Story', score: 92 },  { format: 'Thought', score: 84 },  { format: 'Carousel', score: 78 },  { format: 'Insight', score: 73 },  { format: 'Hook', score: 69 },]export default function AnalyticsPage() {  const [range, setRange] = useState('30d')  return (    <PageWrapper>      <div className="space-y-6">        <div className="flex flex-wrap items-center justify-between gap-2">          <h1 className="text-2xl font-bold text-textDark">Analytics</h1>          <div className="flex gap-2">            {['7d', '30d', '90d', 'custom'].map((key) => (              <Button key={key} variant={range === key ? 'primary' : 'secondary'} onClick={() => setRange(key)}>{key}</Button>            ))}          </div>        </div>        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">          <StatCard label="Total Impressions" value={124850} trend={12} icon={<RefreshCcw size={16} />} />          <StatCard label="Total Likes" value={9340} trend={9} icon={<RefreshCcw size={16} />} />          <StatCard label="Avg Engagement Rate" value={8.8} suffix="%" trend={4} icon={<RefreshCcw size={16} />} />          <StatCard label="Followers Gained" value={1410} trend={22} icon={<RefreshCcw size={16} />} />        </section>        <Card className="p-5">          <h2 className="text-lg font-semibold text-textDark">Engagement Over Time</h2>          <div className="mt-4 overflow-x-auto"><EngagementChart data={metricData} /></div>        </Card>        <div className="grid gap-4 lg:grid-cols-2">          <Card className="p-5">            <h2 className="text-lg font-semibold text-textDark">Best Posting Times</h2>            <div className="mt-4 overflow-x-auto"><HeatmapGrid data={heatmap} /></div>          </Card>          <Card className="p-5">            <h2 className="text-lg font-semibold text-textDark">Format Performance</h2>            <div className="mt-4 overflow-x-auto"><FormatBarChart data={formats} /></div>          </Card>        </div>        <Card className="p-5">          <h2 className="text-lg font-semibold text-textDark">Follower Growth</h2>          <div className="mt-4 overflow-x-auto"><GrowthChart data={growth} /></div>        </Card>        <Card className="p-5">          <div className="flex items-center justify-between">            <h2 className="text-lg font-semibold text-textDark">Top Posts</h2>            <Button variant="secondary">Sync LinkedIn</Button>          </div>          <div className="mt-3 overflow-x-auto">            <table className="min-w-full text-sm">              <thead>                <tr className="text-left text-textGray">                  <th className="py-2">Title</th><th>Format</th><th>Impressions</th><th>Likes</th><th>Engagement</th><th>Date</th>                </tr>              </thead>              <tbody>                {[                  ['How I doubled content output', 'Story', '18,400', '1,620', '11.1%', 'Feb 24'],                  ['Three hooks that still work', 'Hook', '12,200', '940', '8.2%', 'Feb 20'],                ].map((row) => (                  <tr key={row[0]} className="border-t">                    {row.map((cell) => <td key={cell} className="py-3 pr-4">{cell}</td>)}                  </tr>                ))}              </tbody>            </table>          </div>        </Card>      </div>    </PageWrapper>  )}
+"use client"
+
+import { useState } from "react"
+import { RefreshCcw } from "lucide-react"
+import { EngagementChart } from "@/components/charts/EngagementChart"
+import { FormatBarChart } from "@/components/charts/FormatBarChart"
+import { GrowthChart } from "@/components/charts/GrowthChart"
+import { HeatmapGrid } from "@/components/charts/HeatmapGrid"
+import { PageWrapper } from "@/components/layout/PageWrapper"
+import { Card } from "@/components/ui/Card"
+import { StatCard } from "@/components/ui/StatCard"
+import { Button } from "@/components/ui/Button"
+
+const metricData = Array.from({ length: 14 }, (_, i) => ({
+  day: `D${i + 1}`,
+  impressions: 1200 + i * 95,
+  likes: 120 + i * 12,
+  comments: 20 + i,
+}))
+
+const growth = Array.from({ length: 14 }, (_, i) => ({
+  day: `D${i + 1}`,
+  followers: 2200 + i * 31,
+}))
+
+const heatmap = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].flatMap((day, dayIdx) =>
+  ["9a", "12p", "3p", "6p"].map((hour, hourIdx) => ({
+    day,
+    hour,
+    value: (dayIdx * 17 + hourIdx * 23 + 31) % 100,
+  })),
+)
+
+const formats = [
+  { format: "Story", score: 92 },
+  { format: "Thought", score: 84 },
+  { format: "Carousel", score: 78 },
+  { format: "Insight", score: 73 },
+  { format: "Hook", score: 69 },
+]
+
+export default function AnalyticsPage() {
+  const [range, setRange] = useState("30d")
+
+  return (
+    <PageWrapper>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-2xl font-bold text-textDark">Analytics</h1>
+          <div className="flex gap-2">
+            {["7d", "30d", "90d", "custom"].map((key) => (
+              <Button key={key} variant={range === key ? "primary" : "secondary"} onClick={() => setRange(key)}>
+                {key}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Total Impressions" value={124850} trend={12} icon={<RefreshCcw size={16} />} />
+          <StatCard label="Total Likes" value={9340} trend={9} icon={<RefreshCcw size={16} />} />
+          <StatCard label="Avg Engagement Rate" value={8.8} suffix="%" trend={4} icon={<RefreshCcw size={16} />} />
+          <StatCard label="Followers Gained" value={1410} trend={22} icon={<RefreshCcw size={16} />} />
+        </section>
+
+        <Card className="p-5">
+          <h2 className="text-lg font-semibold text-textDark">Engagement Over Time</h2>
+          <div className="mt-4 overflow-x-auto">
+            <EngagementChart data={metricData} />
+          </div>
+        </Card>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="p-5">
+            <h2 className="text-lg font-semibold text-textDark">Best Posting Times</h2>
+            <div className="mt-4 overflow-x-auto">
+              <HeatmapGrid data={heatmap} />
+            </div>
+          </Card>
+          <Card className="p-5">
+            <h2 className="text-lg font-semibold text-textDark">Format Performance</h2>
+            <div className="mt-4 overflow-x-auto">
+              <FormatBarChart data={formats} />
+            </div>
+          </Card>
+        </div>
+
+        <Card className="p-5">
+          <h2 className="text-lg font-semibold text-textDark">Follower Growth</h2>
+          <div className="mt-4 overflow-x-auto">
+            <GrowthChart data={growth} />
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-textDark">Top Posts</h2>
+            <Button variant="secondary">Sync LinkedIn</Button>
+          </div>
+          <div className="mt-3 overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-textGray">
+                  <th className="py-2">Title</th>
+                  <th>Format</th>
+                  <th>Impressions</th>
+                  <th>Likes</th>
+                  <th>Engagement</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["How I doubled content output", "Story", "18,400", "1,620", "11.1%", "Feb 24"],
+                  ["Three hooks that still work", "Hook", "12,200", "940", "8.2%", "Feb 20"],
+                ].map((row) => (
+                  <tr key={row[0]} className="border-t">
+                    {row.map((cell) => (
+                      <td key={cell} className="py-3 pr-4">
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+    </PageWrapper>
+  )
+}
