@@ -9,6 +9,21 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { pickString, toRecord } from '@/lib/normalize'
 
+function extractUserId(payload: unknown): string {
+  const root = toRecord(payload)
+  const direct = pickString(root.id ?? root._id ?? root.user_id, '')
+  if (direct) return direct
+
+  const nestedKeys = ['data', 'user', 'result']
+  for (const key of nestedKeys) {
+    const nested = toRecord(root[key])
+    const id = pickString(nested.id ?? nested._id ?? nested.user_id, '')
+    if (id) return id
+  }
+
+  return ''
+}
+
 export function OnboardingModal() {
   const userId = useAppStore((s) => s.userId)
   const setUser = useAppStore((s) => s.setUser)
@@ -24,9 +39,14 @@ export function OnboardingModal() {
   const create = useMutation({
     mutationFn: () => api.createUser({ name, email, niche }),
     onSuccess: (user) => {
-      const record = toRecord(user)
+      const id = extractUserId(user)
+      if (!id) {
+        toast.error('Profile created but no user ID returned by API. Please check backend response.')
+        return
+      }
+
       const normalized = {
-        id: pickString(record.id ?? record._id, crypto.randomUUID()),
+        id,
         name,
         email,
         niche,

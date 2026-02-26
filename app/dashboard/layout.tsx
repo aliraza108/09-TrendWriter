@@ -33,10 +33,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     ;(async () => {
       try {
         await api.getUser(userId)
-      } catch {
+      } catch (error) {
         if (!active) return
-        clearUser()
-        localStorage.removeItem('user_id')
+        const message = error instanceof Error ? error.message : ''
+        if (message.includes('User not found') || message.includes('404')) {
+          clearUser()
+          localStorage.removeItem('user_id')
+        }
       }
     })()
 

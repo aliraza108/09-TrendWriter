@@ -32,7 +32,13 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
 
 export const api = {
   createUser: (data: unknown) => request('/users/', { method: 'POST', body: JSON.stringify(data) }),
-  getUser: (id: string) => request(`/users/${id}`),
+  getUser: async (id: string) => {
+    try {
+      return await request(`/users/${id}`)
+    } catch {
+      return request(`/users/${id}/`)
+    }
+  },
   updateUser: (id: string, data: unknown) => request(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
 
   generateContent: (data: unknown) => request('/content/generate', { method: 'POST', body: JSON.stringify(data) }),
