@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -25,6 +25,19 @@ type Variant = {
   score: number
 }
 
+function splitPostText(text: string) {
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+  const hook = lines[0] || "Generated post"
+  const cta =
+    lines.find((l) => /comment|follow|share|save|dm|message|reply/i.test(l)) ||
+    "Share your perspective in comments."
+  const body = lines.slice(1).join("\n") || text || "Generated content"
+  return { hook, body, cta }
+}
+
 const formats = [
   { id: "thought", name: "Thought Leadership", description: "Strong opinion with evidence", avg: "8.2%" },
   { id: "story", name: "Story", description: "Narrative + lesson", avg: "9.7%" },
@@ -47,15 +60,47 @@ function normalizeTopics(payload: unknown) {
 }
 
 function normalizeVariants(payload: unknown): Variant[] {
+  if (typeof payload === "string") {
+    const parsed = splitPostText(payload)
+    return [{ ...parsed, hashtags: [], score: 75 }]
+  }
+
+  const root = toRecord(payload)
+  const directText =
+    pickString(root.generated_content, "") ||
+    pickString(root.content, "") ||
+    pickString(root.text, "")
+  if (directText) {
+    const parsed = splitPostText(directText)
+    return [{ ...parsed, hashtags: [], score: 75 }]
+  }
+
+  const keyedVariants = Object.keys(root)
+    .filter((k) => /^variant[_-]?\d+$/i.test(k))
+    .map((k) => root[k])
+    .filter((v) => typeof v === "string") as string[]
+  if (keyedVariants.length) {
+    return keyedVariants.map((v) => {
+      const parsed = splitPostText(v)
+      return { ...parsed, hashtags: [], score: 75 }
+    })
+  }
+
   const rows = toArray(payload)
   return rows
     .map((item) => {
+      if (typeof item === "string") {
+        const parsed = splitPostText(item)
+        return { ...parsed, hashtags: [], score: 75 }
+      }
+
       const row = toRecord(item)
       const fullText = pickString(row.content ?? row.body, "")
+      const parsed = splitPostText(fullText)
       return {
-        hook: pickString(row.hook, fullText.split("\n")[0] || "Generated post"),
-        body: pickString(row.body, fullText || "Generated content"),
-        cta: pickString(row.cta, "Share your perspective in comments."),
+        hook: pickString(row.hook, parsed.hook),
+        body: pickString(row.body, parsed.body),
+        cta: pickString(row.cta, parsed.cta),
         hashtags: Array.isArray(row.hashtags) ? row.hashtags.map((h) => String(h).replace(/^#/, "")) : [],
         score: pickNumber(row.score ?? row.predicted_score, 75),
       }
@@ -81,12 +126,28 @@ export default function CreatePage() {
   })
   const topics = useMemo(() => normalizeTopics(topicsQuery.data), [topicsQuery.data])
 
+  useEffect(() => {
+    if (!topic && topics.length) setTopic(topics[0].topic)
+  }, [topic, topics])
+
   const generateMutation = useMutation({
-    mutationFn: () => api.generateVariants({ user_id: userId, topic, format }),
-    onSuccess: (result) => {
-      const parsed = normalizeVariants(result)
+    mutationFn: async () => {
+      const payload = { user_id: userId || undefined, topic, format }
+      try {
+        const variantsResult = await api.generateVariants(payload)
+        const parsedVariants = normalizeVariants(variantsResult)
+        if (parsedVariants.length) return parsedVariants
+      } catch {
+        // Fallback below.
+      }
+
+      const contentResult = await api.generateContent(payload)
+      const parsedContent = normalizeVariants(contentResult)
+      return parsedContent
+    },
+    onSuccess: (parsed) => {
       if (!parsed.length) {
-        toast.error("No variants returned. Try another topic.")
+        toast.error("No post was generated. Try another topic.")
         return
       }
       setVariants(parsed)
@@ -94,7 +155,10 @@ export default function CreatePage() {
       setStep(2)
       toast.success("Variants generated")
     },
-    onError: () => toast.error("Failed to generate variants"),
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : "Failed to generate posts"
+      toast.error(message)
+    },
   })
 
   const scheduleMutation = useMutation({
@@ -157,7 +221,7 @@ export default function CreatePage() {
             <Button
               loading={generateMutation.isPending}
               onClick={() => generateMutation.mutate()}
-              disabled={!userId || !topic || generateMutation.isPending}
+              disabled={!topic || generateMutation.isPending}
             >
               Generate Variants
             </Button>
@@ -182,7 +246,7 @@ export default function CreatePage() {
                 variant="secondary"
                 loading={generateMutation.isPending}
                 onClick={() => generateMutation.mutate()}
-                disabled={!userId || !topic || generateMutation.isPending}
+                disabled={!topic || generateMutation.isPending}
               >
                 Generate More Variants
               </Button>
