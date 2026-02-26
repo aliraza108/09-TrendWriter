@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f3f2ef;
+  --foreground: #1d2226;
+  --card: #ffffff;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
+  --card: #1f2937;
+}
+
+body {
+  background: radial-gradient(circle at top right, rgba(112, 181, 249, 0.18), transparent 35%), var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+  min-height: 100vh;
+}
+
+.glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.shimmer-bg {
+  background: linear-gradient(90deg, #ebf3ff 25%, #d7e8ff 37%, #ebf3ff 63%);
+  background-size: 400% 100%;
+}
