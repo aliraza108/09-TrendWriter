@@ -25,10 +25,11 @@ type AppState = {
   posts: Post[]
   darkMode: boolean
   setUser: (user: User) => void
-  setUserId: (userId: string) => void
+  setUserId: (userId: string | null) => void
   setPosts: (posts: Post[]) => void
   addPost: (post: Post) => void
   toggleDarkMode: () => void
+  clearUser: () => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -43,6 +44,7 @@ export const useAppStore = create<AppState>()(
       setPosts: (posts) => set({ posts }),
       addPost: (post) => set((state) => ({ posts: [post, ...state.posts] })),
       toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      clearUser: () => set({ user: null, userId: null, posts: [] }),
     }),
     {
       name: 'trendwriter-store',

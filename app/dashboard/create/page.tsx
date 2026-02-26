@@ -111,6 +111,7 @@ function normalizeVariants(payload: unknown): Variant[] {
 export default function CreatePage() {
   const router = useRouter()
   const userId = useAppStore((s) => s.userId)
+  const clearUser = useAppStore((s) => s.clearUser)
   const [step, setStep] = useState(1)
   const [topic, setTopic] = useState("")
   const [format, setFormat] = useState(formats[0].id)
@@ -157,6 +158,13 @@ export default function CreatePage() {
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : "Failed to generate posts"
+      if (message.includes("User not found")) {
+        clearUser()
+        localStorage.removeItem("user_id")
+        toast.error("Session expired. Please complete onboarding again.")
+        router.push("/dashboard")
+        return
+      }
       toast.error(message)
     },
   })

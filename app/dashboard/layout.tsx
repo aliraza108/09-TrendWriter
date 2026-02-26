@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/layout/BottomNav'
 import { OnboardingModal } from '@/components/layout/OnboardingModal'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
+import { api } from '@/lib/api'
 import { useAppStore } from '@/lib/store'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -12,6 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const darkMode = useAppStore((s) => s.darkMode)
   const userId = useAppStore((s) => s.userId)
   const setUserId = useAppStore((s) => s.setUserId)
+  const clearUser = useAppStore((s) => s.clearUser)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
@@ -23,6 +25,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const saved = localStorage.getItem('user_id')
     if (saved) setUserId(saved)
   }, [setUserId, userId])
+
+  useEffect(() => {
+    if (!userId) return
+    let active = true
+
+    ;(async () => {
+      try {
+        await api.getUser(userId)
+      } catch {
+        if (!active) return
+        clearUser()
+        localStorage.removeItem('user_id')
+      }
+    })()
+
+    return () => {
+      active = false
+    }
+  }, [clearUser, userId])
 
   return (
     <div className="flex min-h-screen">
