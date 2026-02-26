@@ -10,11 +10,19 @@ import { useAppStore } from '@/lib/store'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = useAppStore((s) => s.user)
   const darkMode = useAppStore((s) => s.darkMode)
+  const userId = useAppStore((s) => s.userId)
+  const setUserId = useAppStore((s) => s.setUserId)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
   }, [darkMode])
+
+  useEffect(() => {
+    if (userId) return
+    const saved = localStorage.getItem('user_id')
+    if (saved) setUserId(saved)
+  }, [setUserId, userId])
 
   return (
     <div className="flex min-h-screen">

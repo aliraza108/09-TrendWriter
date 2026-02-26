@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { useAppStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { pickString, toRecord } from '@/lib/normalize'
 
 export function OnboardingModal() {
   const userId = useAppStore((s) => s.userId)
@@ -22,9 +23,10 @@ export function OnboardingModal() {
 
   const create = useMutation({
     mutationFn: () => api.createUser({ name, email, niche }),
-    onSuccess: (user: any) => {
+    onSuccess: (user) => {
+      const record = toRecord(user)
       const normalized = {
-        id: user?.id || user?._id || crypto.randomUUID(),
+        id: pickString(record.id ?? record._id, crypto.randomUUID()),
         name,
         email,
         niche,
